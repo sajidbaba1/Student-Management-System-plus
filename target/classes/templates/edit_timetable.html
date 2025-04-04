@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+        .form-input, .form-select { background: rgba(255, 255, 255, 0.15); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0.75rem; width: 100%; }
+        .error-message { color: #f87171; font-size: 0.9rem; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container mx-auto mt-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-white">Edit Timetable</h1>
+        <div class="glass-container max-w-md mx-auto">
+            <div th:if="${error}" class="error-message text-center mb-4" th:text="${error}"></div>
+            <form th:action="@{/timetables/{id}(id=${timetable.id})}" th:object="${timetable}" method="POST">
+                <div class="mb-4">
+                    <label for="teacher" class="block mb-2 text-white">Teacher</label>
+                    <select id="teacher" th:field="*{teacher}" class="form-select" required>
+                        <option value="">Select a teacher</option>
+                        <option th:each="teacher : ${teachers}"
+                                th:value="${teacher.id}"
+                                th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"
+                                th:selected="${teacher.id == timetable.teacher.id}"></option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="course" class="block mb-2 text-white">Course</label>
+                    <select id="course" th:field="*{course}" class="form-select" required>
+                        <option value="">Select a course</option>
+                        <option th:each="course : ${courses}"
+                                th:value="${course.id}"
+                                th:text="${course.courseName}"
+                                th:selected="${course.id == timetable.course.id}"></option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="dayOfWeek" class="block mb-2 text-white">Day of Week</label>
+                    <select id="dayOfWeek" th:field="*{dayOfWeek}" class="form-select" required>
+                        <option value="">Select a day</option>
+                        <option value="Monday" th:selected="${timetable.dayOfWeek == 'Monday'}">Monday</option>
+                        <option value="Tuesday" th:selected="${timetable.dayOfWeek == 'Tuesday'}">Tuesday</option>
+                        <option value="Wednesday" th:selected="${timetable.dayOfWeek == 'Wednesday'}">Wednesday</option>
+                        <option value="Thursday" th:selected="${timetable.dayOfWeek == 'Thursday'}">Thursday</option>
+                        <option value="Friday" th:selected="${timetable.dayOfWeek == 'Friday'}">Friday</option>
+                        <option value="Saturday" th:selected="${timetable.dayOfWeek == 'Saturday'}">Saturday</option>
+                        <option value="Sunday" th:selected="${timetable.dayOfWeek == 'Sunday'}">Sunday</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="startTime" class="block mb-2 text-white">Start Time</label>
+                    <input type="time" id="startTime" th:field="*{startTime}" class="form-input" required>
+                </div>
+                <div class="mb-4">
+                    <label for="endTime" class="block mb-2 text-white">End Time</label>
+                    <input type="time" id="endTime" th:field="*{endTime}" class="form-input" required>
+                </div>
+                <div class="flex justify-center space-x-4">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Update</button>
+                    <a th:href="@{/timetables}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

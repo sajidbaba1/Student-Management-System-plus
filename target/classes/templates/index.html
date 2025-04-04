@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container mx-auto mt-16">
+        <h1 class="text-5xl font-bold text-center mb-12 text-white">Welcome to the Student Management System</h1>
+        <div class="glass-container max-w-2xl mx-auto">
+            <p class="text-center text-lg mb-8">Manage your students, teachers, courses, and timetables with ease.</p>
+            <div class="grid grid-cols-2 gap-4">
+                <a th:href="@{/students}" class="bg-blue-600 text-white text-center px-4 py-3 rounded hover:bg-blue-700">Manage Students</a>
+                <a th:href="@{/teachers}" class="bg-blue-600 text-white text-center px-4 py-3 rounded hover:bg-blue-700">Manage Teachers</a>
+                <a th:href="@{/courses}" class="bg-blue-600 text-white text-center px-4 py-3 rounded hover:bg-blue-700">Manage Courses</a>
+                <a th:href="@{/timetables}" class="bg-blue-600 text-white text-center px-4 py-3 rounded hover:bg-blue-700">Manage Timetables</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
