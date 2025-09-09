@@ -66,8 +66,8 @@ public class InvoiceController {
         Invoice invoice = invoiceService.getById(id);
         ByteArrayOutputStream baos = invoiceService.generatePdf(invoice);
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "invoice_" + id + ".pdf");
+        headers.setContentType(MediaType.TEXT_HTML);
+        headers.setContentDispositionFormData("attachment", "invoice_" + id + ".html");
         return ResponseEntity.ok().headers(headers).body(baos.toByteArray());
     }
 

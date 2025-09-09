@@ -1,14 +1,5 @@
 package net.javaguides.sms.service.impl;
 
-import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.borders.SolidBorder;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.layout.property.UnitValue;
 import net.javaguides.sms.entity.Invoice;
 import net.javaguides.sms.entity.Student;
 import net.javaguides.sms.repository.InvoiceRepository;
@@ -76,55 +67,36 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public ByteArrayOutputStream generatePdf(Invoice invoice) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String html = "<!DOCTYPE html>" +
+                "<html><head><meta charset='UTF-8'><title>Invoice " + invoice.getId() + "</title>" +
+                "<style>body{font-family:Arial,sans-serif;color:#333;padding:20px;}" +
+                ".hdr{color:#2196f3;text-align:center;font-size:24px;font-weight:bold;}" +
+                ".box{border:1px solid #ddd;border-radius:8px;padding:16px;margin-top:12px;}" +
+                ".row{display:flex;justify-content:space-between;margin:6px 0;}" +
+                "table{width:100%;border-collapse:collapse;margin-top:10px;}th,td{border:1px solid #ddd;padding:8px;}th{background:#f7f7f7;text-align:left;}" +
+                ".ft{text-align:center;color:#666;margin-top:16px;}" +
+                "</style></head><body>" +
+                "<div class='hdr'>INVOICE</div>" +
+                "<div class='box'>" +
+                "<div class='row'><div><b>Invoice ID:</b> " + invoice.getId() + "</div><div><b>Status:</b> " + invoice.getStatus() + "</div></div>" +
+                "<div class='row'><div><b>Issue Date:</b> " + invoice.getIssueDate().format(fmt) + "</div><div><b>Due Date:</b> " + invoice.getDueDate().format(fmt) + "</div></div>" +
+                "</div>" +
+                "<div class='box'>" +
+                "<div><b>Billed To</b></div>" +
+                "<div>" + invoice.getStudent().getFirstName() + " " + invoice.getStudent().getLastName() + " (" + invoice.getStudent().getEmail() + ")</div>" +
+                "</div>" +
+                "<div class='box'>" +
+                "<table><thead><tr><th>Description</th><th>Amount ($)</th></tr></thead>" +
+                "<tbody><tr><td>" + invoice.getDescription() + "</td><td>" + String.format("%.2f", invoice.getAmount()) + "</td></tr></tbody></table>" +
+                "</div>" +
+                "<div class='ft'>Thank you for your payment.</div>" +
+                "</body></html>";
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PdfWriter writer = new PdfWriter(baos);
-            PdfDocument pdf = new PdfDocument(writer);
-            Document doc = new Document(pdf);
-
-            Paragraph title = new Paragraph("INVOICE")
-                    .setFontSize(22)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontColor(new DeviceRgb(33, 150, 243));
-            doc.add(title);
-
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            Paragraph meta = new Paragraph(
-                    "Invoice ID: " + invoice.getId() + "\n" +
-                    "Issue Date: " + invoice.getIssueDate().format(fmt) + "\n" +
-                    "Due Date: " + invoice.getDueDate().format(fmt))
-                    .setMarginTop(10);
-            doc.add(meta);
-
-            Paragraph student = new Paragraph("Billed To:\n" +
-                    invoice.getStudent().getFirstName() + " " + invoice.getStudent().getLastName() +
-                    " (" + invoice.getStudent().getEmail() + ")")
-                    .setMarginTop(10);
-            doc.add(student);
-
-            Table table = new Table(new float[]{70, 30});
-            table.setWidth(UnitValue.createPercentValue(100));
-            table.addHeaderCell("Description");
-            table.addHeaderCell("Amount ($)");
-            table.addCell(invoice.getDescription());
-            table.addCell(String.format("%.2f", invoice.getAmount()));
-            table.setBorder(new SolidBorder(1));
-            doc.add(table);
-
-            Paragraph status = new Paragraph("Status: " + invoice.getStatus())
-                    .setMarginTop(10);
-            doc.add(status);
-
-            Paragraph footer = new Paragraph("Thank you for your payment.")
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginTop(20);
-            doc.add(footer);
-
-            doc.close();
-            return baos;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate invoice PDF", e);
-        }
+            baos.write(html.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (Exception ignored) {}
+        return baos;
     }
 
     @Override

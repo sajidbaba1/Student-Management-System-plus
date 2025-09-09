@@ -40,8 +40,8 @@ public class ChatbotController {
             @RequestParam String message,
             @RequestParam(required = false) String sessionId,
             Authentication auth) {
-        
-        String username = auth.getName();
+        // Handle unauthenticated access gracefully
+        String username = (auth != null) ? auth.getName() : "guest";
         
         // Generate session ID if not provided
         if (sessionId == null || sessionId.trim().isEmpty()) {
