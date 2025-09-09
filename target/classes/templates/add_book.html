@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+        .form-input, .form-select { background: rgba(255, 255, 255, 0.15); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0.75rem; width: 100%; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Add New Book</h1>
+    
+    <div class="glass max-w-2xl mx-auto">
+        <form th:action="@{/library/books}" th:object="${book}" method="POST">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">Title</label>
+                    <input type="text" th:field="*{title}" class="form-input" placeholder="Book Title" required />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">Author</label>
+                    <input type="text" th:field="*{author}" class="form-input" placeholder="Author Name" required />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">ISBN</label>
+                    <input type="text" th:field="*{isbn}" class="form-input" placeholder="978-0-123456-78-9" required />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">Publisher</label>
+                    <input type="text" th:field="*{publisher}" class="form-input" placeholder="Publisher Name" />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">Publication Year</label>
+                    <input type="number" th:field="*{publicationYear}" class="form-input" placeholder="2023" min="1900" max="2030" />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">Category</label>
+                    <select th:field="*{category}" class="form-select" required>
+                        <option value="">Select Category</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="Non-Fiction">Non-Fiction</option>
+                        <option value="Science">Science</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="History">History</option>
+                        <option value="Biography">Biography</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Reference">Reference</option>
+                        <option value="Children">Children</option>
+                        <option value="Academic">Academic</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">Total Copies</label>
+                    <input type="number" th:field="*{totalCopies}" class="form-input" placeholder="5" min="1" required />
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block mb-2 text-white">Shelf Location</label>
+                    <input type="text" th:field="*{location}" class="form-input" placeholder="A-1-5" />
+                </div>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Add Book</button>
+                <a th:href="@{/library/books}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

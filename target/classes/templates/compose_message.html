@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compose Message</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+        .form-input { background: rgba(255, 255, 255, 0.15); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0.75rem; width: 100%; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Compose Message</h1>
+    
+    <div class="glass max-w-2xl mx-auto">
+        <form th:action="@{/messages/send}" th:object="${message}" method="POST">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-white">To (Username)</label>
+                <input type="text" th:field="*{recipientUsername}" class="form-input" placeholder="Enter recipient username" required />
+                <div class="text-sm text-gray-400 mt-1">Enter the username of the recipient</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-white">Subject</label>
+                <input type="text" th:field="*{subject}" class="form-input" placeholder="Message subject" required />
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-white">Message</label>
+                <textarea th:field="*{content}" class="form-input" rows="8" placeholder="Type your message here..." required></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-white">Message Type</label>
+                <select th:field="*{messageType}" class="form-input">
+                    <option value="PERSONAL">Personal Message</option>
+                    <option value="SYSTEM" sec:authorize="hasAnyRole('ADMIN','PRINCIPAL','VICE_PRINCIPAL')">System Message</option>
+                </select>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Send Message</button>
+                <a th:href="@{/messages}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -55,9 +55,16 @@
                         <td class="p-3" th:text="${student.firstName}"></td>
                         <td class="p-3" th:text="${student.lastName}"></td>
                         <td class="p-3" th:text="${student.email}"></td>
-                        <td class="p-3">
-                            <a th:href="@{/students/edit/{id}(id=${student.id})}" class="text-blue-400 hover:underline mr-4" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Edit</a>
-                            <a th:href="@{/students/{id}(id=${student.id})}" class="text-red-400 hover:underline" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Delete</a>
+                        <td class="p-3 space-x-2">
+                            <a th:href="@{/students/edit/{id}(id=${student.id})}" class="text-blue-400 hover:underline mr-2" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Edit</a>
+                            <a th:href="@{/students/{id}(id=${student.id})}" class="text-red-400 hover:underline mr-2" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Delete</a>
+                            <a th:href="@{/attendance/report/{id}(id=${student.id})}" class="text-indigo-400 hover:underline mr-2">Attendance Report</a>
+                            <form th:action="@{/enrollments}" method="post" class="inline" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <input type="hidden" name="studentId" th:value="${student.id}" />
+                                <input class="bg-gray-800 text-white px-2 py-1 rounded w-28" name="courseId" type="number" placeholder="Course ID" required />
+                                <button class="bg-green-600 text-white px-2 py-1 rounded ml-1">Enroll</button>
+                            </form>
                         </td>
                     </tr>
                     <tr th:if="${students.isEmpty()}">

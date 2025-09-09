@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Grades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Student Grades</h1>
+    
+    <div class="glass mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-xl" th:text="${student.firstName} + ' ' + ${student.lastName}"></h2>
+                <p class="text-gray-300" th:text="'Email: ' + ${student.email}"></p>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold text-green-400" th:text="'GPA: ' + ${#numbers.formatDecimal(gpa, 1, 2)}"></div>
+                <div class="text-sm text-gray-300">Overall Grade Point Average</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass">
+        <h3 class="text-xl mb-4">Grade History</h3>
+        <table class="w-full text-left">
+            <thead>
+            <tr class="text-white border-b border-gray-600">
+                <th class="p-3">Course</th>
+                <th class="p-3">Assessment</th>
+                <th class="p-3">Score</th>
+                <th class="p-3">Percentage</th>
+                <th class="p-3">GPA Point</th>
+                <th class="p-3">Date</th>
+                <th class="p-3">Comments</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="grade : ${grades}" class="text-gray-200 border-b border-gray-600">
+                <td class="p-3" th:text="${grade.course.courseName}"></td>
+                <td class="p-3">
+                    <div th:text="${grade.assessmentType}"></div>
+                    <div class="text-sm text-gray-400" th:text="${grade.assessmentName}"></div>
+                </td>
+                <td class="p-3" th:text="${grade.score} + '/' + ${grade.maxScore}"></td>
+                <td class="p-3">
+                    <span th:text="${#numbers.formatDecimal(grade.percentage, 1, 2)} + '%'" 
+                          th:class="${grade.percentage >= 90} ? 'text-green-400' : (${grade.percentage >= 80} ? 'text-blue-400' : (${grade.percentage >= 70} ? 'text-yellow-400' : 'text-red-400'))"></span>
+                </td>
+                <td class="p-3" th:text="${#numbers.formatDecimal(grade.gpaPoint, 1, 1)}"></td>
+                <td class="p-3" th:text="${#temporals.format(grade.gradedAt, 'yyyy-MM-dd')}"></td>
+                <td class="p-3" th:text="${grade.comments ?: 'No comments'}"></td>
+            </tr>
+            <tr th:if="${grades.isEmpty()}">
+                <td colspan="7" class="p-3 text-center text-gray-300">No grades found for this student.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

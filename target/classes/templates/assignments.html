@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Assignment Management</h1>
+    
+    <div class="glass mb-6">
+        <div class="mb-4 text-green-300" th:if="${message}" th:text="${message}"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl">All Assignments</h2>
+            <a th:href="@{/assignments/new}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Create Assignment</a>
+        </div>
+
+        <table class="w-full text-left">
+            <thead>
+            <tr class="text-white border-b border-gray-600">
+                <th class="p-3">Title</th>
+                <th class="p-3">Course</th>
+                <th class="p-3">Teacher</th>
+                <th class="p-3">Due Date</th>
+                <th class="p-3">Max Score</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="assignment : ${assignments}" class="text-gray-200 border-b border-gray-600">
+                <td class="p-3">
+                    <div th:text="${assignment.title}" class="font-semibold"></div>
+                    <div class="text-sm text-gray-400" th:text="${assignment.description}"></div>
+                </td>
+                <td class="p-3" th:text="${assignment.course.courseName}"></td>
+                <td class="p-3" th:text="${assignment.teacher.firstName} + ' ' + ${assignment.teacher.lastName}"></td>
+                <td class="p-3">
+                    <span th:text="${#temporals.format(assignment.dueDate, 'yyyy-MM-dd HH:mm')}"
+                          th:class="${assignment.overdue} ? 'text-red-400' : 'text-gray-200'"></span>
+                </td>
+                <td class="p-3" th:text="${assignment.maxScore}"></td>
+                <td class="p-3">
+                    <span th:text="${assignment.status}" 
+                          th:class="${assignment.status == 'ACTIVE'} ? 'text-green-400' : 'text-gray-400'"></span>
+                </td>
+                <td class="p-3">
+                    <a th:href="@{/assignments/{id}/submissions(id=${assignment.id})}" class="text-blue-400 hover:underline mr-2">View Submissions</a>
+                    <a th:href="@{/assignments/{id}/submit(id=${assignment.id})}" class="text-green-400 hover:underline mr-2" sec:authorize="hasAnyRole('STUDENT','PARENT')">Submit</a>
+                    <form th:action="@{/assignments/{id}/delete(id=${assignment.id})}" method="post" class="inline" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="text-red-400 hover:underline" onclick="return confirm('Delete this assignment?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${assignments.isEmpty()}">
+                <td colspan="7" class="p-3 text-center text-gray-300">No assignments found.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="mt-4 flex justify-between items-center">
+            <div>Total Items: <span th:text="${totalItems}"></span></div>
+            <div class="flex space-x-2">
+                <a th:if="${currentPage > 0}" th:href="@{/assignments(page=${currentPage - 1})}" class="bg-blue-600 text-white px-3 py-1 rounded">Previous</a>
+                <a th:if="${currentPage < totalPages - 1}" th:href="@{/assignments(page=${currentPage + 1})}" class="bg-blue-600 text-white px-3 py-1 rounded">Next</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

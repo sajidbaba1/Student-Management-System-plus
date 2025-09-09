@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .chat-popup {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+            background: white;
+        }
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        .widget-message {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .widget-user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .widget-bot-message {
+            background: #e9ecef;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <button class="chat-toggle" id="chatToggle">💬</button>
+        <div class="chat-popup" id="chatPopup">
+            <div class="chat-header">
+                SMS Assistant
+                <button style="float: right; background: none; border: none; color: white; font-size: 18px; cursor: pointer;" onclick="toggleChat()">×</button>
+            </div>
+            <div class="chat-messages" id="widgetChatMessages">
+                <div class="widget-message widget-bot-message">
+                    Hi! I'm your SMS Assistant. How can I help you today?
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="widgetChatInput" placeholder="Type your message..." />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let widgetSessionId = null;
+        
+        function toggleChat() {
+            const popup = document.getElementById('chatPopup');
+            const toggle = document.getElementById('chatToggle');
+            
+            if (popup.style.display === 'none' || popup.style.display === '') {
+                popup.style.display = 'flex';
+                toggle.innerHTML = '×';
+            } else {
+                popup.style.display = 'none';
+                toggle.innerHTML = '💬';
+            }
+        }
+        
+        function sendWidgetMessage(message) {
+            if (!message.trim()) return;
+            
+            // Add user message
+            addWidgetMessage('You', message, 'widget-user-message');
+            
+            // Clear input
+            document.getElementById('widgetChatInput').value = '';
+            
+            // Send to backend
+            const formData = new FormData();
+            formData.append('message', message);
+            if (widgetSessionId) {
+                formData.append('sessionId', widgetSessionId);
+            }
+            
+            fetch('/chat/message', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                widgetSessionId = data.sessionId;
+                addWidgetMessage('Assistant', data.response, 'widget-bot-message');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addWidgetMessage('Assistant', 'Sorry, I encountered an error. Please try again.', 'widget-bot-message');
+            });
+        }
+        
+        function addWidgetMessage(sender, message, cssClass) {
+            const messagesContainer = document.getElementById('widgetChatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `widget-message ${cssClass}`;
+            messageDiv.innerHTML = message.replace(/\n/g, '<br>');
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Event listeners
+        document.getElementById('chatToggle').addEventListener('click', toggleChat);
+        
+        document.getElementById('widgetChatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendWidgetMessage(this.value);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +19,7 @@
         <div class="glass-container max-w-md mx-auto">
             <div th:if="${error}" class="error-message text-center mb-4" th:text="${error}"></div>
             <form th:action="@{/timetables/{id}(id=${timetable.id})}" th:object="${timetable}" method="POST">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <div class="mb-4">
                     <label for="teacher" class="block mb-2 text-white">Teacher</label>
                     <select id="teacher" th:field="*{teacher}" class="form-select" required>

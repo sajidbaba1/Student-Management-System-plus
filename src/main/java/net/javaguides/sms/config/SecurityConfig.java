@@ -55,6 +55,8 @@ public class SecurityConfig {
                 .requestMatchers("/library/**").hasAnyRole("LIBRARIAN","ADMIN","PRINCIPAL")
                 .requestMatchers("/finance/**").hasAnyRole("ACCOUNTANT","ADMIN","PRINCIPAL")
                 .requestMatchers("/counsel/**").hasAnyRole("COUNSELOR","ADMIN","PRINCIPAL")
+                .requestMatchers("/files/**").hasAnyRole("ADMIN","STAFF","LIBRARIAN","PRINCIPAL")
+                .requestMatchers("/chat/**").authenticated()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex

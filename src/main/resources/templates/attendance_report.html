@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Attendance Report</h1>
+    <div class="text-gray-300 mb-4">
+        Student ID: <span th:text="${studentId}"></span>
+        <span class="ml-6">Total: <span th:text="${total}"></span></span>
+        <span class="ml-6">Present: <span th:text="${present}"></span></span>
+        <span class="ml-6">Percent: <span th:text="${#numbers.formatDecimal(percent, 1, 2)}"></span>%</span>
+    </div>
+
+    <table class="w-full text-left">
+        <thead>
+        <tr class="text-white">
+            <th class="p-2">Date</th>
+            <th class="p-2">Course</th>
+            <th class="p-2">Teacher</th>
+            <th class="p-2">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="a : ${records}" class="text-gray-200 border-b border-gray-600">
+            <td class="p-2" th:text="${a.date}"></td>
+            <td class="p-2" th:text="${a.timetable.course.courseName}"></td>
+            <td class="p-2" th:text="${a.timetable.teacher.firstName} + ' ' + ${a.timetable.teacher.lastName}"></td>
+            <td class="p-2" th:text="${a.status}"></td>
+        </tr>
+        <tr th:if="${records.isEmpty()}">
+            <td colspan="4" class="p-2 text-center text-gray-300">No attendance records.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

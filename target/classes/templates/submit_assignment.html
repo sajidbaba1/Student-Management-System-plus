@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Assignment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+        .form-input { background: rgba(255, 255, 255, 0.15); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0.75rem; width: 100%; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Submit Assignment</h1>
+    
+    <div class="glass mb-6">
+        <h2 class="text-xl mb-2" th:text="${assignment.title}"></h2>
+        <p class="text-gray-300 mb-2" th:text="${assignment.description}"></p>
+        <div class="text-sm text-gray-400">
+            <span>Course: </span><span th:text="${assignment.course.courseName}"></span>
+            <span class="ml-4">Due: </span><span th:text="${#temporals.format(assignment.dueDate, 'yyyy-MM-dd HH:mm')}" th:class="${assignment.overdue} ? 'text-red-400' : 'text-gray-300'"></span>
+            <span class="ml-4">Max Score: </span><span th:text="${assignment.maxScore}"></span>
+        </div>
+        <div th:if="${assignment.overdue}" class="text-red-400 mt-2 font-semibold">⚠️ This assignment is overdue!</div>
+    </div>
+    
+    <div class="glass max-w-2xl mx-auto">
+        <form th:action="@{/assignments/{id}/submit(id=${assignment.id})}" th:object="${submission}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-white">Student (Auto-filled)</label>
+                <select th:field="*{student}" class="form-input bg-gray-700" disabled>
+                    <option value="1">Current Student (Demo)</option>
+                </select>
+                <input type="hidden" th:field="*{student}" value="1" />
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-white">Submission Content</label>
+                <textarea th:field="*{content}" class="form-input" rows="6" placeholder="Enter your assignment solution here..." required></textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block mb-2 text-white">Attachment (Optional)</label>
+                <input type="file" name="attachment" class="form-input" accept=".pdf,.doc,.docx,.txt,.zip" />
+                <div class="text-sm text-gray-400 mt-1">Supported formats: PDF, DOC, DOCX, TXT, ZIP</div>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Submit Assignment</button>
+                <a th:href="@{/assignments}" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

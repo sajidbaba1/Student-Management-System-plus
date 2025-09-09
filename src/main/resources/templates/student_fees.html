@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Fee Records</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Student Fee Records</h1>
+    
+    <div class="glass mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-xl" th:text="${student.firstName} + ' ' + ${student.lastName}"></h2>
+                <p class="text-gray-300" th:text="'Email: ' + ${student.email}"></p>
+            </div>
+            <div class="text-right">
+                <div class="text-lg font-bold text-green-400" th:text="'Total Paid: $' + ${#numbers.formatDecimal(totalPaid, 1, 2)}"></div>
+                <div class="text-lg font-bold text-red-400" th:text="'Outstanding: $' + ${#numbers.formatDecimal(totalOutstanding, 1, 2)}"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass">
+        <h3 class="text-xl mb-4">Fee History</h3>
+        <table class="w-full text-left">
+            <thead>
+            <tr class="text-white border-b border-gray-600">
+                <th class="p-3">Fee Type</th>
+                <th class="p-3">Amount</th>
+                <th class="p-3">Paid</th>
+                <th class="p-3">Balance</th>
+                <th class="p-3">Due Date</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Payment Details</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="fee : ${fees}" class="text-gray-200 border-b border-gray-600">
+                <td class="p-3" th:text="${fee.feeType}"></td>
+                <td class="p-3" th:text="'$' + ${#numbers.formatDecimal(fee.amount, 1, 2)}"></td>
+                <td class="p-3" th:text="'$' + ${#numbers.formatDecimal(fee.paidAmount, 1, 2)}"></td>
+                <td class="p-3" th:text="'$' + ${#numbers.formatDecimal(fee.balanceAmount, 1, 2)}"></td>
+                <td class="p-3">
+                    <span th:text="${fee.dueDate}" th:class="${fee.overdue} ? 'text-red-400' : 'text-gray-200'"></span>
+                </td>
+                <td class="p-3">
+                    <span th:text="${fee.status}" 
+                          th:class="${fee.status == 'PAID'} ? 'text-green-400' : (${fee.overdue} ? 'text-red-400' : 'text-yellow-400')"></span>
+                </td>
+                <td class="p-3">
+                    <div th:if="${fee.paidAt != null}">
+                        <div class="text-sm" th:text="'Method: ' + ${fee.paymentMethod}"></div>
+                        <div class="text-sm" th:text="'Date: ' + ${#temporals.format(fee.paidAt, 'yyyy-MM-dd')}"></div>
+                        <div class="text-sm" th:if="${fee.transactionId}" th:text="'TxnID: ' + ${fee.transactionId}"></div>
+                    </div>
+                    <div th:unless="${fee.paidAt != null}" class="text-gray-400">No payment yet</div>
+                </td>
+            </tr>
+            <tr th:if="${fees.isEmpty()}">
+                <td colspan="7" class="p-3 text-center text-gray-300">No fee records found for this student.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

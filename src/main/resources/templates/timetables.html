@@ -45,7 +45,8 @@
                         <td class="p-3" th:text="${timetable.endTime}"></td>
                         <td class="p-3">
                             <a th:href="@{/timetables/edit/{id}(id=${timetable.id})}" class="text-blue-400 hover:underline mr-4" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Edit</a>
-                            <a th:href="@{/timetables/{id}(id=${timetable.id})}" class="text-red-400 hover:underline" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Delete</a>
+                            <a th:href="@{/timetables/{id}(id=${timetable.id})}" class="text-red-400 hover:underline mr-4" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Delete</a>
+                            <a th:href="@{/attendance/mark/{id}(id=${timetable.id})}" class="text-green-400 hover:underline" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Mark Attendance</a>
                         </td>
                     </tr>
                     <tr th:if="${timetables.isEmpty()}">

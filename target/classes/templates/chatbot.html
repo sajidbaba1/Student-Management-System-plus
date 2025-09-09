@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+        .chat-container { height: 500px; overflow-y: auto; }
+        .user-message { background: rgba(59, 130, 246, 0.3); margin-left: 20%; }
+        .bot-message { background: rgba(34, 197, 94, 0.3); margin-right: 20%; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 10px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">AI Assistant</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Chat Interface -->
+        <div class="lg:col-span-2">
+            <div class="glass">
+                <h3 class="text-xl mb-4">Chat with SMS Assistant</h3>
+                
+                <div id="chatContainer" class="chat-container bg-gray-800 rounded-lg p-4 mb-4">
+                    <div class="message bot-message">
+                        <strong>SMS Assistant:</strong> Hello! I'm here to help you with the Student Management System. Ask me about students, grades, fees, library, or anything else!
+                    </div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <input type="text" id="messageInput" placeholder="Type your message..." 
+                           class="flex-1 bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-600" />
+                    <button id="sendButton" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                        Send
+                    </button>
+                </div>
+                
+                <div class="mt-4 flex space-x-2">
+                    <button class="quick-question bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700" 
+                            data-question="How do I add a new student?">Add Student</button>
+                    <button class="quick-question bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700" 
+                            data-question="How do I manage grades?">Manage Grades</button>
+                    <button class="quick-question bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700" 
+                            data-question="How do I check fees?">Check Fees</button>
+                    <button class="quick-question bg-gray-600 text-white px-3 py-1 rounded text-sm hover:bg-gray-700" 
+                            data-question="How do I use the library system?">Library Help</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Analytics -->
+        <div class="space-y-4">
+            <div class="glass">
+                <h3 class="text-lg mb-2">Today's Stats</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span>Total Messages:</span>
+                        <span th:text="${totalMessagesToday}" class="text-blue-400">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Active Sessions:</span>
+                        <span id="activeSessions" class="text-green-400">1</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass">
+                <h3 class="text-lg mb-2">Popular Topics</h3>
+                <div id="topIntents" class="space-y-1">
+                    <div th:each="intent : ${topIntents}" class="flex justify-between text-sm">
+                        <span th:text="${intent[0]}" class="capitalize"></span>
+                        <span th:text="${intent[1]}" class="text-gray-400"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass">
+                <h3 class="text-lg mb-2">Quick Actions</h3>
+                <div class="space-y-2">
+                    <button id="clearChat" class="w-full bg-yellow-600 text-white py-2 rounded hover:bg-yellow-700">
+                        Clear Chat
+                    </button>
+                    <button id="exportChat" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                        Export History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSessionId = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatContainer = document.getElementById('chatContainer');
+        const quickQuestions = document.querySelectorAll('.quick-question');
+        
+        // Send message function
+        function sendMessage(message) {
+            if (!message.trim()) return;
+            
+            // Add user message to chat
+            addMessageToChat('You', message, 'user-message');
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Send to backend
+            const formData = new FormData();
+            formData.append('message', message);
+            if (currentSessionId) {
+                formData.append('sessionId', currentSessionId);
+            }
+            
+            fetch('/chat/message', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                currentSessionId = data.sessionId;
+                addMessageToChat('SMS Assistant', data.response, 'bot-message');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addMessageToChat('SMS Assistant', 'Sorry, I encountered an error. Please try again.', 'bot-message');
+            });
+        }
+        
+        // Add message to chat display
+        function addMessageToChat(sender, message, cssClass) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${cssClass}`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${message.replace(/\n/g, '<br>')}`;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Event listeners
+        sendButton.addEventListener('click', () => sendMessage(messageInput.value));
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage(messageInput.value);
+            }
+        });
+        
+        quickQuestions.forEach(button => {
+            button.addEventListener('click', function() {
+                const question = this.getAttribute('data-question');
+                sendMessage(question);
+            });
+        });
+        
+        // Clear chat
+        document.getElementById('clearChat').addEventListener('click', function() {
+            chatContainer.innerHTML = `
+                <div class="message bot-message">
+                    <strong>SMS Assistant:</strong> Hello! I'm here to help you with the Student Management System. Ask me about students, grades, fees, library, or anything else!
+                </div>
+            `;
+            currentSessionId = null;
+        });
+        
+        // Export chat (placeholder)
+        document.getElementById('exportChat').addEventListener('click', function() {
+            alert('Chat export feature coming soon!');
+        });
+        
+        // Update active sessions periodically
+        setInterval(function() {
+            document.getElementById('activeSessions').textContent = currentSessionId ? '1' : '0';
+        }, 5000);
+    });
+</script>
+</body>
+</html>

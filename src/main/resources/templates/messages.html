@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl text-white mb-4">Messages</h1>
+    
+    <div class="glass mb-6">
+        <div class="mb-4 text-green-300" th:if="${success}" th:text="${success}"></div>
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex space-x-4">
+                <a th:href="@{/messages}" class="px-4 py-2 rounded" th:class="${currentTab == 'inbox'} ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'">
+                    Inbox <span th:if="${unreadCount > 0}" class="bg-red-500 text-white px-2 py-1 rounded-full text-xs ml-1" th:text="${unreadCount}"></span>
+                </a>
+                <a th:href="@{/messages/sent}" class="px-4 py-2 rounded" th:class="${currentTab == 'sent'} ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'">Sent</a>
+                <a th:href="@{/messages/announcements}" class="px-4 py-2 rounded" th:class="${currentTab == 'announcements'} ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-300'">Announcements</a>
+            </div>
+            <div class="space-x-2">
+                <a th:href="@{/messages/compose}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Compose</a>
+                <button class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700" onclick="toggleBroadcastForm()" sec:authorize="hasAnyRole('ADMIN','PRINCIPAL','VICE_PRINCIPAL')">Broadcast</button>
+            </div>
+        </div>
+
+        <!-- Broadcast Form (Hidden by default) -->
+        <div id="broadcastForm" class="hidden mb-4 p-4 bg-gray-800 rounded">
+            <h3 class="text-lg mb-2">Broadcast Announcement</h3>
+            <form th:action="@{/messages/broadcast}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="mb-2">
+                    <input type="text" name="subject" placeholder="Subject" class="w-full bg-gray-700 text-white px-3 py-2 rounded" required />
+                </div>
+                <div class="mb-2">
+                    <textarea name="content" placeholder="Message content" rows="3" class="w-full bg-gray-700 text-white px-3 py-2 rounded" required></textarea>
+                </div>
+                <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Send Announcement</button>
+            </form>
+        </div>
+
+        <table class="w-full text-left">
+            <thead>
+            <tr class="text-white border-b border-gray-600">
+                <th class="p-3" th:if="${currentTab == 'inbox'}">From</th>
+                <th class="p-3" th:if="${currentTab == 'sent'}">To</th>
+                <th class="p-3" th:if="${currentTab == 'announcements'}">Announcement</th>
+                <th class="p-3">Subject</th>
+                <th class="p-3">Date</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="message : ${messages}" class="text-gray-200 border-b border-gray-600" th:class="${!message.isRead and currentTab == 'inbox'} ? 'bg-blue-900 bg-opacity-30' : ''">
+                <td class="p-3" th:if="${currentTab == 'inbox'}" th:text="${message.senderUsername}"></td>
+                <td class="p-3" th:if="${currentTab == 'sent'}" th:text="${message.recipientUsername}"></td>
+                <td class="p-3" th:if="${currentTab == 'announcements'}">📢 System</td>
+                <td class="p-3">
+                    <div th:text="${message.subject}" class="font-semibold"></div>
+                    <div class="text-sm text-gray-400 truncate max-w-xs" th:text="${message.content}"></div>
+                </td>
+                <td class="p-3" th:text="${#temporals.format(message.sentAt, 'yyyy-MM-dd HH:mm')}"></td>
+                <td class="p-3">
+                    <span th:if="${message.isRead}" class="text-green-400">Read</span>
+                    <span th:unless="${message.isRead}" class="text-yellow-400">Unread</span>
+                </td>
+                <td class="p-3">
+                    <form th:if="${!message.isRead and currentTab == 'inbox'}" th:action="@{/messages/{id}/read(id=${message.id})}" method="post" class="inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="text-blue-400 hover:underline mr-2">Mark Read</button>
+                    </form>
+                    <form th:action="@{/messages/{id}/delete(id=${message.id})}" method="post" class="inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="text-red-400 hover:underline" onclick="return confirm('Delete this message?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${messages.isEmpty()}">
+                <td colspan="6" class="p-3 text-center text-gray-300">No messages found.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function toggleBroadcastForm() {
+    const form = document.getElementById('broadcastForm');
+    form.classList.toggle('hidden');
+}
+</script>
+</body>
+</html>
