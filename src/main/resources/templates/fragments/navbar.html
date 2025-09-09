@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <nav th:fragment="navbar" class="bg-gray-800 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-white text-2xl font-bold">Student Management System</a>
+            <div class="space-x-4 flex items-center">
+                <a th:href="@{/dashboard}" class="text-white hover:text-gray-300">Dashboard</a>
+                <a th:href="@{/students}" class="text-white hover:text-gray-300">Students</a>
+                <a th:href="@{/teachers}" class="text-white hover:text-gray-300">Teachers</a>
+                <a th:href="@{/courses}" class="text-white hover:text-gray-300">Courses</a>
+                <a th:href="@{/timetables}" class="text-white hover:text-gray-300">Timetables</a>
+                <span class="text-gray-300 ml-4" sec:authorize="isAuthenticated()">
+                    Hello, <span sec:authentication="name"></span>
+                </span>
+                <a class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" th:href="@{/login}" sec:authorize="!isAuthenticated()">Login</a>
+                <a class="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700" th:href="@{/logout}" sec:authorize="isAuthenticated()">Logout</a>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

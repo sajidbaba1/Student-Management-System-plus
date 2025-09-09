@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+        .table-header { background: rgba(255, 255, 255, 0.2); }
+        .table-row:hover { background: rgba(255, 255, 255, 0.15); }
+        .error-message { color: #f87171; font-size: 0.9rem; margin-bottom: 1rem; }
+        .pagination a { color: #60a5fa; }
+        .pagination a:hover { color: #2563eb; }
+        .pagination .disabled { color: #6b7280; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container mx-auto mt-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-white">Teachers</h1>
+        <div class="glass-container">
+            <div th:if="${error}" class="error-message text-center" th:text="${error}"></div>
+            <div class="mb-4 flex justify-between items-center">
+                <form th:action="@{/teachers}" method="get" class="flex items-center space-x-2">
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="Search teachers..." class="bg-gray-800 text-white border border-gray-600 rounded px-4 py-2">
+                    <select name="sort" class="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2" th:value="${sort}">
+                        <option value="firstName" th:selected="${sort} == 'firstName'">First Name</option>
+                        <option value="lastName" th:selected="${sort} == 'lastName'">Last Name</option>
+                        <option value="email" th:selected="${sort} == 'email'">Email</option>
+                    </select>
+                    <select name="direction" class="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2" th:value="${direction}">
+                        <option value="asc" th:selected="${direction} == 'asc'">Asc</option>
+                        <option value="desc" th:selected="${direction} == 'desc'">Desc</option>
+                    </select>
+                    <input type="hidden" name="page" value="0">
+                    <input type="hidden" name="size" value="5">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Apply</button>
+                    <a th:href="@{/teachers/export(page=${currentPage}, size=5, keyword=${keyword}, sort=${sort}, direction=${direction})}" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Export CSV</a>
+                </form>
+                <a th:href="@{/teachers/new}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Add New Teacher</a>
+            </div>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="table-header">
+                        <th class="p-3">First Name</th>
+                        <th class="p-3">Last Name</th>
+                        <th class="p-3">Email</th>
+                        <th class="p-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="teacher : ${teachers}" class="table-row border-b border-gray-600">
+                        <td class="p-3" th:text="${teacher.firstName}"></td>
+                        <td class="p-3" th:text="${teacher.lastName}"></td>
+                        <td class="p-3" th:text="${teacher.email}"></td>
+                        <td class="p-3">
+                            <a th:href="@{/teachers/edit/{id}(id=${teacher.id})}" class="text-blue-400 hover:underline mr-4" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Edit</a>
+                            <a th:href="@{/teachers/{id}(id=${teacher.id})}" class="text-red-400 hover:underline" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Delete</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${teachers.isEmpty()}">
+                        <td colspan="4" class="p-3 text-center">No teachers found.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="mt-4 flex justify-between items-center">
+                <div>
+                    <span>Total Items: </span><span th:text="${totalItems}"></span>
+                </div>
+                <div class="pagination flex space-x-2">
+                    <a th:href="@{/teachers(page=${currentPage - 1}, size=5, keyword=${keyword}, sort=${sort}, direction=${direction})}"
+                       th:classappend="${currentPage == 0} ? 'disabled'" class="px-3 py-1 rounded">Previous</a>
+                    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                        <a th:href="@{/teachers(page=${i}, size=5, keyword=${keyword}, sort=${sort}, direction=${direction})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == currentPage} ? 'font-bold text-blue-400' : ''"
+                           class="px-3 py-1 rounded"></a>
+                    </span>
+                    <a th:href="@{/teachers(page=${currentPage + 1}, size=5, keyword=${keyword}, sort=${sort}, direction=${direction})}"
+                       th:classappend="${currentPage == totalPages - 1} ? 'disabled'" class="px-3 py-1 rounded">Next</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Student Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container mx-auto mt-16">
+        <div class="glass-container max-w-md mx-auto text-center">
+            <h1 class="text-4xl font-bold text-red-400 mb-4">Oops! Something Went Wrong</h1>
+            <p class="text-lg mb-6">An unexpected error occurred. Please try again later or contact support.</p>
+            <a th:href="@{/}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+        .form-input { background: rgba(255, 255, 255, 0.15); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 0.75rem; width: 100%; }
+        .error-message { color: #f87171; font-size: 0.9rem; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto mt-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-white">Create New Student</h1>
+        <div class="glass-container max-w-md mx-auto">
+            <div th:if="${error}" class="error-message text-center mb-4" th:text="${error}"></div>
+            <form th:action="@{/students}" th:object="${student}" method="POST">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <div class="mb-4">
+                    <label for="firstName" class="block mb-2 text-white">First Name</label>
+                    <input type="text" id="firstName" th:field="*{firstName}" class="form-input" placeholder="Enter First Name" required>
+                    <div th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="error-message"></div>
+                </div>
+                <div class="mb-4">
+                    <label for="lastName" class="block mb-2 text-white">Last Name</label>
+                    <input type="text" id="lastName" th:field="*{lastName}" class="form-input" placeholder="Enter Last Name">
+                    <div th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="error-message"></div>
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block mb-2 text-white">Email</label>
+                    <input type="email" id="email" th:field="*{email}" class="form-input" placeholder="Enter Email" required>
+                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
+                </div>
+                <div class="flex justify-center space-x-4">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit</button>
+                    <a th:href="@{/students}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

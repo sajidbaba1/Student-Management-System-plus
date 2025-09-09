@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8 space-y-6">
+    <h1 class="text-4xl font-bold text-white">Dashboard</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Viewer & Guest -->
+        <div class="glass" sec:authorize="hasAnyRole('VIEWER','GUEST','STUDENT','PARENT')">
+            <h2 class="text-2xl mb-2">Read-Only Access</h2>
+            <ul class="list-disc ml-6">
+                <li>View students, teachers, courses, timetables</li>
+            </ul>
+        </div>
+
+        <!-- Staff / Registrar / HOD -->
+        <div class="glass" sec:authorize="hasAnyRole('STAFF','REGISTRAR','HOD','VICE_PRINCIPAL','PRINCIPAL')">
+            <h2 class="text-2xl mb-2">Academic Admin</h2>
+            <ul class="list-disc ml-6">
+                <li>Create/edit/delete students, teachers, courses, timetables</li>
+                <li>Manage enrollments and attendance</li>
+            </ul>
+        </div>
+
+        <!-- Librarian -->
+        <div class="glass" sec:authorize="hasRole('LIBRARIAN')">
+            <h2 class="text-2xl mb-2">Library</h2>
+            <ul class="list-disc ml-6">
+                <li>Manage books and issues (future module)</li>
+            </ul>
+        </div>
+
+        <!-- Accountant -->
+        <div class="glass" sec:authorize="hasRole('ACCOUNTANT')">
+            <h2 class="text-2xl mb-2">Finance</h2>
+            <ul class="list-disc ml-6">
+                <li>Fees and invoices (future module)</li>
+            </ul>
+        </div>
+
+        <!-- Counselor -->
+        <div class="glass" sec:authorize="hasRole('COUNSELOR')">
+            <h2 class="text-2xl mb-2">Counseling</h2>
+            <ul class="list-disc ml-6">
+                <li>Appointments and notes (future module)</li>
+            </ul>
+        </div>
+
+        <!-- Admin -->
+        <div class="glass" sec:authorize="hasRole('ADMIN')">
+            <h2 class="text-2xl mb-2">System Admin</h2>
+            <ul class="list-disc ml-6">
+                <li>User & role management (future module)</li>
+                <li>System settings</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

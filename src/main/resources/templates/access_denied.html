@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 2rem; }
+    </style>
+</head>
+<body>
+<div class="container mx-auto mt-20 max-w-xl">
+    <div class="glass-container text-center">
+        <h1 class="text-3xl font-bold mb-4">Access Denied</h1>
+        <p class="mb-6">You don't have permission to access this page. If you believe this is an error, contact an administrator.</p>
+        <div class="space-x-4">
+            <a th:href="@{/}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Go Home</a>
+            <a th:href="@{/logout}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Logout</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
