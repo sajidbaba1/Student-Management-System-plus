@@ -31,6 +31,7 @@
                 <a th:href="@{/assignments}" class="text-white hover:text-gray-300" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL','STUDENT')">Assignments</a>
                 <a th:href="@{/messages}" class="text-white hover:text-gray-300">Messages</a>
                 <a th:href="@{/fees}" class="text-white hover:text-gray-300" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL','PARENT','STUDENT')">Fees</a>
+                <a th:href="@{/invoices}" class="text-white hover:text-gray-300" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL','PARENT')">Invoices</a>
                 <a th:href="@{/library}" class="text-white hover:text-gray-300" sec:authorize="hasAnyRole('ADMIN','STAFF','LIBRARIAN','PRINCIPAL','STUDENT')">Library</a>
                 <a th:href="@{/chat}" class="text-white hover:text-gray-300">AI Assistant</a>
                 <span class="text-gray-300 ml-4" sec:authorize="isAuthenticated()">
@@ -74,6 +75,7 @@
                 <div>
                     <h3>Finance</h3>
                     <a th:href="@{/fees}" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL','PARENT','STUDENT')">Fees</a>
+                    <a th:href="@{/invoices}" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL','PARENT')">Invoices</a>
                 </div>
                 <div>
                     <h3>Communication</h3>

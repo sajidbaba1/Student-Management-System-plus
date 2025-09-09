@@ -17,7 +17,14 @@
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div class="container mx-auto mt-8">
-    <h1 class="text-3xl text-white mb-4">AI Assistant</h1>
+    <div class="flex items-center mb-4 space-x-3">
+        <h1 class="text-3xl text-white">AI Assistant</h1>
+        <span id="geminiBadge"
+              th:classappend="${geminiActive} ? 'bg-green-600' : 'bg-gray-600'"
+              class="text-white text-xs px-2 py-1 rounded">
+            <span th:text="${geminiActive} ? 'Gemini active' : 'FAQ mode'"></span>
+        </span>
+    </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Chat Interface -->
@@ -101,6 +108,7 @@
         const sendButton = document.getElementById('sendButton');
         const chatContainer = document.getElementById('chatContainer');
         const quickQuestions = document.querySelectorAll('.quick-question');
+        const geminiBadge = document.getElementById('geminiBadge');
         
         // Send message function
         function sendMessage(message) {
@@ -181,6 +189,25 @@
         setInterval(function() {
             document.getElementById('activeSessions').textContent = currentSessionId ? '1' : '0';
         }, 5000);
+
+        // Poll Gemini status and update badge (in case key changes without restart)
+        setInterval(function() {
+            fetch('/chat/status')
+              .then(r => r.json())
+              .then(s => {
+                  if (!geminiBadge) return;
+                  if (s.geminiActive) {
+                      geminiBadge.classList.remove('bg-gray-600');
+                      geminiBadge.classList.add('bg-green-600');
+                      geminiBadge.textContent = 'Gemini active';
+                  } else {
+                      geminiBadge.classList.remove('bg-green-600');
+                      geminiBadge.classList.add('bg-gray-600');
+                      geminiBadge.textContent = 'FAQ mode';
+                  }
+              })
+              .catch(()=>{});
+        }, 15000);
     });
 </script>
 </body>

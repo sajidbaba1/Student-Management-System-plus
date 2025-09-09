@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8 space-y-4">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl text-white">Invoice #<span th:text="${invoice.id}"></span></h1>
+        <div class="space-x-2">
+            <a th:href="@{'/invoices/' + ${invoice.id} + '/pdf'}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download PDF</a>
+            <form th:action="@{'/invoices/' + ${invoice.id} + '/email'}" method="post" class="inline" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input name="to" type="email" placeholder="Recipient email" class="bg-gray-800 text-white px-3 py-2 rounded" required />
+                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" type="submit">Email PDF</button>
+            </form>
+            <form th:action="@{'/invoices/' + ${invoice.id} + '/paid'}" method="post" class="inline" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700" type="submit">Mark Paid</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="glass">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h2 class="text-xl mb-2">Billed To</h2>
+                <p th:text="${invoice.student.firstName} + ' ' + ${invoice.student.lastName}"></p>
+                <p th:text="${invoice.student.email}"></p>
+            </div>
+            <div>
+                <h2 class="text-xl mb-2">Details</h2>
+                <p><strong>Description:</strong> <span th:text="${invoice.description}"></span></p>
+                <p><strong>Amount:</strong> $<span th:text="${invoice.amount}"></span></p>
+                <p><strong>Issue Date:</strong> <span th:text="${invoice.issueDate}"></span></p>
+                <p><strong>Due Date:</strong> <span th:text="${invoice.dueDate}"></span></p>
+                <p><strong>Status:</strong> <span th:text="${invoice.status}"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <a th:href="@{/invoices}" class="text-blue-300 hover:underline">Back to Invoices</a>
+    </div>
+</div>
+</body>
+</html>

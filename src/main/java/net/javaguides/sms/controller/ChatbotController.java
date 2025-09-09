@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,9 @@ public class ChatbotController {
 
     private final ChatbotService chatbotService;
 
+    @Value("${gemini.api.key:}")
+    private String geminiApiKey;
+
     public ChatbotController(ChatbotService chatbotService) {
         this.chatbotService = chatbotService;
     }
@@ -26,6 +30,7 @@ public class ChatbotController {
     public String chatPage(Model model) {
         model.addAttribute("totalMessagesToday", chatbotService.getTotalMessagesToday());
         model.addAttribute("topIntents", chatbotService.getTopIntents());
+        model.addAttribute("geminiActive", geminiApiKey != null && !geminiApiKey.isBlank());
         return "chatbot";
     }
 
@@ -81,6 +86,12 @@ public class ChatbotController {
         analytics.put("topIntents", chatbotService.getTopIntents());
         
         return ResponseEntity.ok(analytics);
+    }
+
+    @GetMapping("/status")
+    @ResponseBody
+    public Map<String, Object> status() {
+        return Map.of("geminiActive", geminiApiKey != null && !geminiApiKey.isBlank());
     }
 
     @GetMapping("/widget")
