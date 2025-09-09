@@ -4,28 +4,59 @@ import net.javaguides.sms.entity.ChatMessage;
 import net.javaguides.sms.repository.ChatMessageRepository;
 import net.javaguides.sms.service.ChatbotService;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 @Service
 public class ChatbotServiceImpl implements ChatbotService {
 
     private final ChatMessageRepository chatMessageRepository;
+    private final ObjectMapper objectMapper;
+
+    @Value("${gemini.api.key:}")
+    private String geminiApiKey;
+
+    @Value("${gemini.model:gemini-1.5-flash}")
+    private String geminiModel;
 
     public ChatbotServiceImpl(ChatMessageRepository chatMessageRepository) {
         this.chatMessageRepository = chatMessageRepository;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public String processMessage(String sessionId, String username, String message) {
-        String response = generateResponse(message.toLowerCase().trim());
+        String response;
+        String userText = message == null ? "" : message.trim();
+        try {
+            if (geminiApiKey != null && !geminiApiKey.isBlank()) {
+                response = callGemini(userText);
+                if (response == null || response.isBlank()) {
+                    response = generateResponse(userText.toLowerCase());
+                }
+            } else {
+                response = generateResponse(userText.toLowerCase());
+            }
+        } catch (Exception ex) {
+            // Fallback gracefully
+            response = generateResponse(userText.toLowerCase());
+        }
         
         // Determine intent and confidence
-        String intent = detectIntent(message.toLowerCase());
-        double confidence = calculateConfidence(message.toLowerCase(), intent);
+        String intent = detectIntent(userText.toLowerCase());
+        double confidence = calculateConfidence(userText.toLowerCase(), intent);
         
         // Save the conversation
         ChatMessage chatMessage = saveMessage(sessionId, username, message, response);
@@ -34,6 +65,59 @@ public class ChatbotServiceImpl implements ChatbotService {
         chatMessageRepository.save(chatMessage);
         
         return response;
+    }
+
+    private String callGemini(String message) throws Exception {
+        // Build minimal request body per Google Generative Language API v1beta
+        String endpoint = String.format("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s",
+                geminiModel, geminiApiKey);
+
+        // System prompt to scope responses
+        String systemInstruction = "You are the Student Management System Assistant. Answer briefly and helpfully. If a question involves private data or actions not supported, clarify limitations. Avoid code execution and do not reveal secrets.";
+
+        String body = "{\n" +
+                "  \"contents\": [\n" +
+                "    {\n" +
+                "      \"role\": \"user\",\n" +
+                "      \"parts\": [ { \"text\": " + jsonString(systemInstruction + "\n\nUser: " + message) + " } ]\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"generationConfig\": { \"temperature\": 0.3, \"maxOutputTokens\": 256 }\n" +
+                "}";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .timeout(Duration.ofSeconds(12))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            String respBody = response.body();
+            try {
+                JsonNode root = objectMapper.readTree(respBody);
+                // Typical response: candidates[0].content.parts[0].text
+                JsonNode candidates = root.path("candidates");
+                if (candidates.isArray() && candidates.size() > 0) {
+                    JsonNode textNode = candidates.get(0).path("content").path("parts");
+                    if (textNode.isArray() && textNode.size() > 0) {
+                        String text = textNode.get(0).path("text").asText("");
+                        return text != null ? text.trim() : "";
+                    }
+                }
+            } catch (Exception parseEx) {
+                // Ignore and fallback below
+            }
+        }
+        return null;
+    }
+
+    private String jsonString(String value) {
+        if (value == null) return "\"\"";
+        String escaped = value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+        return "\"" + escaped + "\"";
     }
 
     private String generateResponse(String message) {

@@ -1,12 +1,24 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
-<head>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-    <nav th:fragment="navbar" class="bg-gray-800 p-4">
+<nav th:fragment="navbar" class="bg-gray-900 p-4 shadow-md" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+        <style>
+            /* Off-canvas sidebar styles */
+            .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 40; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 280px; background: rgba(17, 24, 39, 0.95); color: #e5e7eb; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 50; box-shadow: 2px 0 10px rgba(0,0,0,0.3); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .sidebar h3 { color: #93c5fd; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
+            .sidebar a { display: block; padding: 0.5rem 0.75rem; border-radius: 6px; color: #e5e7eb; }
+            .sidebar a:hover { background: rgba(59,130,246,0.2); color: white; }
+        </style>
         <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="text-white text-2xl font-bold">Student Management System</a>
+            <div class="flex items-center space-x-3">
+                <!-- Hamburger button -->
+                <button id="hamburgerBtn" class="text-white focus:outline-none" aria-label="Open Menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                    </svg>
+                </button>
+                <a href="/" class="text-white text-2xl font-bold">Student Management System</a>
+            </div>
             <div class="space-x-4 flex items-center">
                 <a th:href="@{/dashboard}" class="text-white hover:text-gray-300">Dashboard</a>
                 <a th:href="@{/students}" class="text-white hover:text-gray-300">Students</a>
@@ -28,6 +40,85 @@
                 <a class="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700" th:href="@{/logout}" sec:authorize="isAuthenticated()">Logout</a>
             </div>
         </div>
-    </nav>
-</body>
-</html>
+
+        <!-- Off-canvas Sidebar (rendered with fragment) -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+        <aside id="sidebar" class="sidebar">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <span class="text-lg font-semibold">Navigation</span>
+                <button id="closeSidebar" class="text-gray-300 hover:text-white" aria-label="Close Menu">✕</button>
+            </div>
+            <div class="p-4 space-y-4 overflow-y-auto h-[calc(100vh-60px)]">
+                <div>
+                    <h3>Overview</h3>
+                    <a th:href="@{/dashboard}">Dashboard</a>
+                </div>
+                <div>
+                    <h3>Academics</h3>
+                    <a th:href="@{/students}">Students</a>
+                    <a th:href="@{/teachers}">Teachers</a>
+                    <a th:href="@{/courses}">Courses</a>
+                    <a th:href="@{/timetables}">Timetables</a>
+                    <a th:href="@{/enrollments}" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Enrollments</a>
+                    <a th:href="@{/grades}" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Grades</a>
+                    <a th:href="@{/assignments}" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL','STUDENT')">Assignments</a>
+                    <a th:href="@{/attendance/mark}" sec:authorize="hasAnyRole('ADMIN','STAFF','REGISTRAR','HOD','PRINCIPAL','VICE_PRINCIPAL')">Mark Attendance</a>
+                </div>
+                <div>
+                    <h3>Library</h3>
+                    <a th:href="@{/library}">Library Dashboard</a>
+                    <a th:href="@{/library/books}" sec:authorize="hasAnyRole('ADMIN','STAFF','LIBRARIAN','PRINCIPAL')">Books</a>
+                    <a th:href="@{/library/issues}" sec:authorize="hasAnyRole('ADMIN','STAFF','LIBRARIAN','PRINCIPAL')">Issues</a>
+                    <a th:href="@{/library/overdue}" sec:authorize="hasAnyRole('ADMIN','STAFF','LIBRARIAN','PRINCIPAL')">Overdue</a>
+                </div>
+                <div>
+                    <h3>Finance</h3>
+                    <a th:href="@{/fees}" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL','PARENT','STUDENT')">Fees</a>
+                </div>
+                <div>
+                    <h3>Communication</h3>
+                    <a th:href="@{/messages}">Messages</a>
+                    <a th:href="@{/chat}">AI Assistant</a>
+                    <a th:href="@{/files}" sec:authorize="hasAnyRole('ADMIN','STAFF','LIBRARIAN','PRINCIPAL')">Files</a>
+                </div>
+                <div>
+                    <h3>Account</h3>
+                    <a th:href="@{/login}" sec:authorize="!isAuthenticated()">Login</a>
+                    <a th:href="@{/logout}" sec:authorize="isAuthenticated()">Logout</a>
+                </div>
+            </div>
+        </aside>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){
+                const btn = document.getElementById('hamburgerBtn');
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                const closeBtn = document.getElementById('closeSidebar');
+                
+                function openSidebar(){ 
+                    if(sidebar) sidebar.classList.add('open'); 
+                    if(overlay) overlay.classList.add('open'); 
+                }
+                function closeSidebar(){ 
+                    if(sidebar) sidebar.classList.remove('open'); 
+                    if(overlay) overlay.classList.remove('open'); 
+                }
+                
+                if (btn) btn.addEventListener('click', openSidebar);
+                if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+                if (overlay) overlay.addEventListener('click', closeSidebar);
+                
+                // Close on ESC
+                document.addEventListener('keydown', function(e){ 
+                    if(e.key === 'Escape'){ closeSidebar(); } 
+                });
+                
+                // Close sidebar when clicking any navigation link
+                const sidebarLinks = sidebar ? sidebar.querySelectorAll('a') : [];
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', closeSidebar);
+                });
+            });
+        </script>
+</nav>

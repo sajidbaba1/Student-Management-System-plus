@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8 space-y-6">
+    <h1 class="text-3xl text-white">Library</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass">
+            <div class="text-gray-300">Total Books</div>
+            <div class="text-3xl font-bold" th:text="${totalBooks}">0</div>
+        </div>
+        <div class="glass">
+            <div class="text-gray-300">Available Books</div>
+            <div class="text-3xl font-bold text-green-400" th:text="${availableBooks}">0</div>
+        </div>
+        <div class="glass">
+            <div class="text-gray-300">Currently Issued</div>
+            <div class="text-3xl font-bold text-yellow-400" th:text="${issuedBooks}">0</div>
+        </div>
+        <div class="glass">
+            <div class="text-gray-300">Overdue</div>
+            <div class="text-3xl font-bold text-red-400" th:text="${overdueBooks}">0</div>
+        </div>
+    </div>
+
+    <div class="glass">
+        <h2 class="text-xl mb-4">Quick Actions</h2>
+        <div class="flex flex-wrap gap-3">
+            <a th:href="@{/library/books}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Browse Books</a>
+            <a th:href="@{/library/books/new}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded" sec:authorize="hasAnyRole('ADMIN','LIBRARIAN','PRINCIPAL')">Add Book</a>
+            <a th:href="@{/library/issues}" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">View Issues</a>
+            <a th:href="@{/library/overdue}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Overdue Books</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
