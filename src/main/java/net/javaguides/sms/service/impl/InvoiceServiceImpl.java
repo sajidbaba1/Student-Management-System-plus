@@ -1,7 +1,6 @@
 package net.javaguides.sms.service.impl;
 
 import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -9,6 +8,7 @@ import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.TextAlignment;
+import com.itextpdf.layout.property.UnitValue;
 import net.javaguides.sms.entity.Invoice;
 import net.javaguides.sms.entity.Student;
 import net.javaguides.sms.repository.InvoiceRepository;
@@ -103,7 +103,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             doc.add(student);
 
             Table table = new Table(new float[]{70, 30});
-            table.setWidthPercent(100);
+            table.setWidth(UnitValue.createPercentValue(100));
             table.addHeaderCell("Description");
             table.addHeaderCell("Amount ($)");
             table.addCell(invoice.getDescription());

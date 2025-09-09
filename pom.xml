@@ -61,12 +61,16 @@
 			<version>5.7.1</version>
 		</dependency>
 
-		<!-- PDF Generation -->
+		<!-- PDF Generation (iText 7) -->
 		<dependency>
 			<groupId>com.itextpdf</groupId>
-			<artifactId>itext7-core</artifactId>
+			<artifactId>kernel</artifactId>
 			<version>7.2.5</version>
-			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>layout</artifactId>
+			<version>7.2.5</version>
 		</dependency>
 
 		<!-- Excel Support for Bulk Import -->
