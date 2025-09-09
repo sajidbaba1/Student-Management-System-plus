@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <style>
         body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
@@ -127,11 +129,15 @@
                 formData.append('sessionId', currentSessionId);
             }
             
+            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
             fetch('/chat/message', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    [csrfHeader]: csrfToken
                 }
             })
             .then(response => response.json())

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8 space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl text-white" th:text="${event.title}"></h1>
+        <div class="space-x-2" sec:authorize="hasAnyRole('ADMIN','STAFF','PRINCIPAL','VICE_PRINCIPAL','HOD')">
+            <button onclick="toggleEditForm()" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">Edit</button>
+            <form th:action="@{'/calendar/' + ${event.id} + '/delete'}" method="post" class="inline" onsubmit="return confirm('Delete this event?')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Details -->
+    <div class="glass">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h2 class="text-xl mb-4">Event Information</h2>
+                <div class="space-y-3">
+                    <div>
+                        <span class="text-gray-300">Type:</span>
+                        <span class="ml-2 text-xs px-2 py-1 rounded" 
+                              th:classappend="${event.eventType.name() == 'EXAM'} ? 'bg-red-600' : (${event.eventType.name() == 'HOLIDAY'} ? 'bg-green-600' : 'bg-blue-600')"
+                              th:text="${event.eventType.name()}"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-300">Description:</span>
+                        <p class="mt-1" th:text="${event.description ?: 'No description'}"></p>
+                    </div>
+                    <div th:if="${event.location}">
+                        <span class="text-gray-300">Location:</span>
+                        <span class="ml-2" th:text="${event.location}"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-300">Recurrence:</span>
+                        <span class="ml-2" th:text="${event.recurrence.name()}"></span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-xl mb-4">Schedule</h2>
+                <div class="space-y-3">
+                    <div>
+                        <span class="text-gray-300">Start:</span>
+                        <div class="ml-2" th:text="${#temporals.format(event.startTime, 'EEEE, MMMM dd, yyyy HH:mm')}"></div>
+                    </div>
+                    <div>
+                        <span class="text-gray-300">End:</span>
+                        <div class="ml-2" th:text="${#temporals.format(event.endTime, 'EEEE, MMMM dd, yyyy HH:mm')}"></div>
+                    </div>
+                    <div>
+                        <span class="text-gray-300">Created by:</span>
+                        <span class="ml-2" th:text="${event.createdBy}"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-300">Created:</span>
+                        <span class="ml-2" th:text="${#temporals.format(event.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form (Hidden by default) -->
+    <div id="editForm" class="glass hidden" sec:authorize="hasAnyRole('ADMIN','STAFF','PRINCIPAL','VICE_PRINCIPAL','HOD')">
+        <h2 class="text-xl mb-4">Edit Event</h2>
+        <form th:action="@{'/calendar/' + ${event.id}}" method="post" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            
+            <div class="md:col-span-2">
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="title" type="text" th:value="${event.title}" required />
+            </div>
+            <div>
+                <select class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="eventType" required>
+                    <option th:each="type : ${T(net.javaguides.sms.entity.CalendarEvent.EventType).values()}" 
+                            th:value="${type}" th:text="${type.name()}" th:selected="${type == event.eventType}"></option>
+                </select>
+            </div>
+            
+            <div class="md:col-span-3">
+                <textarea class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="description" rows="2" th:text="${event.description}"></textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm text-gray-300 mb-1">Start Time</label>
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="startTime" type="datetime-local" 
+                       th:value="${#temporals.format(event.startTime, 'yyyy-MM-dd\'T\'HH:mm')}" required />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-1">End Time</label>
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="endTime" type="datetime-local" 
+                       th:value="${#temporals.format(event.endTime, 'yyyy-MM-dd\'T\'HH:mm')}" required />
+            </div>
+            <div>
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="location" type="text" th:value="${event.location}" placeholder="Location (optional)" />
+            </div>
+            
+            <div>
+                <select class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="recurrence">
+                    <option th:each="rec : ${T(net.javaguides.sms.entity.CalendarEvent.RecurrenceType).values()}" 
+                            th:value="${rec}" th:text="${rec.name()}" th:selected="${rec == event.recurrence}"></option>
+                </select>
+            </div>
+            
+            <div class="md:col-span-3 space-x-2">
+                <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" type="submit">Update Event</button>
+                <button type="button" onclick="toggleEditForm()" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <div>
+        <a th:href="@{/calendar}" class="text-blue-300 hover:underline">← Back to Calendar</a>
+    </div>
+</div>
+
+<script>
+function toggleEditForm() {
+    const form = document.getElementById('editForm');
+    form.classList.toggle('hidden');
+}
+</script>
+</body>
+</html>

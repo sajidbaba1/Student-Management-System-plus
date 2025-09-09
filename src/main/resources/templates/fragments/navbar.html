@@ -33,6 +33,7 @@
                 <a th:href="@{/fees}" class="text-white hover:text-gray-300" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL','PARENT','STUDENT')">Fees</a>
                 <a th:href="@{/invoices}" class="text-white hover:text-gray-300" sec:authorize="hasAnyRole('ADMIN','STAFF','ACCOUNTANT','PRINCIPAL','VICE_PRINCIPAL','PARENT')">Invoices</a>
                 <a th:href="@{/library}" class="text-white hover:text-gray-300" sec:authorize="hasAnyRole('ADMIN','STAFF','LIBRARIAN','PRINCIPAL','STUDENT')">Library</a>
+                <a th:href="@{/calendar}" class="text-white hover:text-gray-300">Calendar</a>
                 <a th:href="@{/chat}" class="text-white hover:text-gray-300">AI Assistant</a>
                 <span class="text-gray-300 ml-4" sec:authorize="isAuthenticated()">
                     Hello, <span sec:authentication="name"></span>

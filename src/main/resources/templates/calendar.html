@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar & Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #2c3e50, #3498db); color: #e0e0e0; font-family: 'Arial', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border-radius: 15px; padding: 1.5rem; }
+        .event-card { transition: transform 0.2s; }
+        .event-card:hover { transform: translateY(-2px); }
+        table th, table td { padding: .5rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="container mx-auto mt-8 space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl text-white">Calendar & Events</h1>
+        <div class="space-x-2">
+            <a th:href="@{/calendar/export.ics}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export ICS</a>
+        </div>
+    </div>
+
+    <!-- Create Event Form -->
+    <div class="glass" sec:authorize="hasAnyRole('ADMIN','STAFF','PRINCIPAL','VICE_PRINCIPAL','HOD')">
+        <h2 class="text-xl mb-4">Create Event</h2>
+        <form th:action="@{/calendar}" method="post" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            
+            <div class="md:col-span-2">
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="title" type="text" placeholder="Event Title" required />
+            </div>
+            <div>
+                <select class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="eventType" required>
+                    <option value="GENERAL">General</option>
+                    <option value="ACADEMIC">Academic</option>
+                    <option value="EXAM">Exam</option>
+                    <option value="HOLIDAY">Holiday</option>
+                    <option value="MEETING">Meeting</option>
+                    <option value="SPORTS">Sports</option>
+                    <option value="CULTURAL">Cultural</option>
+                </select>
+            </div>
+            
+            <div class="md:col-span-3">
+                <textarea class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="description" placeholder="Description" rows="2"></textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm text-gray-300 mb-1">Start Time</label>
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="startTime" type="datetime-local" required />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-300 mb-1">End Time</label>
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="endTime" type="datetime-local" required />
+            </div>
+            <div>
+                <input class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="location" type="text" placeholder="Location (optional)" />
+            </div>
+            
+            <div>
+                <select class="w-full bg-gray-800 text-white px-3 py-2 rounded" name="recurrence">
+                    <option value="NONE">No Recurrence</option>
+                    <option value="DAILY">Daily</option>
+                    <option value="WEEKLY">Weekly</option>
+                    <option value="MONTHLY">Monthly</option>
+                    <option value="YEARLY">Yearly</option>
+                </select>
+            </div>
+            
+            <div class="md:col-span-3">
+                <button class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" type="submit">Create Event</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="glass">
+        <h2 class="text-xl mb-4">Upcoming Events</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div th:each="event : ${upcomingEvents}" class="event-card bg-gray-800 p-4 rounded-lg border border-gray-600">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-semibold text-white" th:text="${event.title}"></h3>
+                    <span class="text-xs px-2 py-1 rounded" 
+                          th:classappend="${event.eventType.name() == 'EXAM'} ? 'bg-red-600' : (${event.eventType.name() == 'HOLIDAY'} ? 'bg-green-600' : 'bg-blue-600')"
+                          th:text="${event.eventType.name()}"></span>
+                </div>
+                <p class="text-gray-300 text-sm mb-2" th:text="${event.description}"></p>
+                <div class="text-xs text-gray-400">
+                    <div th:text="${#temporals.format(event.startTime, 'MMM dd, yyyy HH:mm')}"></div>
+                    <div th:if="${event.location}" th:text="'📍 ' + ${event.location}"></div>
+                </div>
+                <div class="mt-2">
+                    <a th:href="@{'/calendar/' + ${event.id}}" class="text-blue-400 hover:underline text-sm">View Details</a>
+                </div>
+            </div>
+            <div th:if="${upcomingEvents.isEmpty()}" class="text-center text-gray-400 py-8 md:col-span-3">
+                No upcoming events
+            </div>
+        </div>
+    </div>
+
+    <!-- All Events Table -->
+    <div class="glass">
+        <h2 class="text-xl mb-4">All Events</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                <tr class="text-white border-b border-gray-600">
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="event : ${events}" class="text-gray-200 border-b border-gray-600">
+                    <td th:text="${event.title}"></td>
+                    <td>
+                        <span class="text-xs px-2 py-1 rounded" 
+                              th:classappend="${event.eventType.name() == 'EXAM'} ? 'bg-red-600' : (${event.eventType.name() == 'HOLIDAY'} ? 'bg-green-600' : 'bg-blue-600')"
+                              th:text="${event.eventType.name()}"></span>
+                    </td>
+                    <td th:text="${#temporals.format(event.startTime, 'MMM dd HH:mm')}"></td>
+                    <td th:text="${#temporals.format(event.endTime, 'MMM dd HH:mm')}"></td>
+                    <td th:text="${event.location ?: '-'}"></td>
+                    <td>
+                        <a th:href="@{'/calendar/' + ${event.id}}" class="text-blue-400 hover:underline">View</a>
+                    </td>
+                </tr>
+                <tr th:if="${events.isEmpty()}">
+                    <td colspan="6" class="text-center text-gray-300 p-4">No events found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
